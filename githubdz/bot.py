@@ -12,7 +12,6 @@ from email.mime.text import MIMEText
 import sqlite3
 import asyncio
 
-# Загрузка переменных окружения
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 SMTP_EMAIL = os.getenv("SMTP_EMAIL")
@@ -20,15 +19,12 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 SMTP_HOST = 'smtp.gmail.com'
 SMTP_PORT = 587
 
-# Настройка бота и диспетчера
 bot = Bot(token=BOT_TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
-# Настройка логирования
 logging.basicConfig(level=logging.INFO)
 
-# Инициализация базы данных
 def init_db():
     conn = sqlite3.connect('logs.db')
     cursor = conn.cursor()
@@ -44,7 +40,6 @@ def init_db():
 
 init_db()
 
-# Состояния бота
 class EmailSending(StatesGroup):
     email = State()
     message_text = State()
@@ -88,7 +83,6 @@ async def confirm_or_edit(message: types.Message, state: FSMContext):
         email = data['email']
         text = data['message_text']
         try:
-            # Отправка письма
             server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
             server.starttls()
             server.login(SMTP_EMAIL, SMTP_PASSWORD)
@@ -103,7 +97,6 @@ async def confirm_or_edit(message: types.Message, state: FSMContext):
             server.sendmail(SMTP_EMAIL, email, msg.as_string())
             server.quit()
 
-            # Логирование в БД
             conn = sqlite3.connect('logs.db')
             cursor = conn.cursor()
             cursor.execute(
@@ -123,7 +116,6 @@ async def confirm_or_edit(message: types.Message, state: FSMContext):
     else:
         await message.answer("Пожалуйста, ответьте 'Да' или 'Нет':")
 
-# Главная функция запуска
 async def main():
     await dp.start_polling(bot)
 
